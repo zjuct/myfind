@@ -1,13 +1,22 @@
 use regex::Regex;
 use std::{fs, process, env};
 use std::path::Path;
+use tracing::info;
+use tracing_subscriber;
+use std::error::Error;
 
 const ANSI_RED: &str = "\x1b[0;31m";
 const ANSI_GREEN: &str = "\x1b[0;32m";
 const ANSI_YELLOW : &str = "\x1b[0;33m";
 const ANSI_END: &str = "\x1b[0m";
 
-fn main() {
+#[tracing::instrument]
+fn main() -> Result<(), Box<dyn Error>> {
+    tracing_subscriber::fmt().init();
+
+//    let span = span!(Level::DEBUG, "span");
+//    let _enter = span.enter();
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         help(&args[0]);
@@ -74,6 +83,15 @@ fn main() {
         process::exit(1);
     }
 
+    info!("Starting points of find:");
+    for stp in &stps {
+        info!("{}", stp);
+    }
+    info!("Regular expression patterns:");
+    for pat in &pats {
+        info!("{}", pat.as_str());
+    }
+
     match find(&stps, &pats) {
         Ok(mut matches) => {
             if matches.is_empty() {
@@ -106,6 +124,7 @@ fn main() {
             process::exit(1);
         }
     }
+    return Ok(())
 }
 
 fn help(bin: &String) {
